@@ -1,3 +1,8 @@
+# Custom
+/config/config.json
+/config/config(prod).json
+/config/config(sandbox).json
+
 # Miscellaneous
 *.class
 *.log

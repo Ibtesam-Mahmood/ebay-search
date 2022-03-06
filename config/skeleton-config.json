@@ -1,0 +1,6 @@
+{
+  "This line can be removed": "MUST BE RENAMED TO config.json when filled in with application secrets",
+  "APP_ID": "",
+  "DEV_ID": "",
+  "CERT_ID": ""
+}
