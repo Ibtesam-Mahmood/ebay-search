@@ -16,8 +16,8 @@ class ConfigReader{
     _config = json.decode(configString) as Map<String, dynamic>;
   }
 
-  /// Retrieves the Ebay application client ID
-  static String getClientID(){
+  /// Retrieves the Ebay application client app ID
+  static String getClientAppID(){
     return _config['APP_ID'] as String;
   }
 
@@ -29,6 +29,11 @@ class ConfigReader{
   /// Retrieves the Ebay client certificate/secret
   static String getClientSecret(){
     return _config['CERT_ID'] as String;
+  }
+
+  /// Retrieves the Ebay Finding API url
+  static String getApiUrl(){
+    return _config['API_URL'] as String;
   }
 
 }

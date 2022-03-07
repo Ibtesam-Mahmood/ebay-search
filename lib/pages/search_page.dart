@@ -9,7 +9,7 @@ class SearchPage extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
-          Text('Client ID: ${ConfigReader.getClientID()}'),
+          Text('Client ID: ${ConfigReader.getClientAppID()}'),
           Text('Client Secret: ${ConfigReader.getClientSecret()}'),
           Text('Dev ID: ${ConfigReader.getDevID()}'),
         ],
