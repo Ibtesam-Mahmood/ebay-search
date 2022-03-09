@@ -68,7 +68,7 @@ class EbayItem{
       globalID: json['globalId'][0],
       primaryCategory: EbayCategory.fromJson(json['primaryCategory'][0]), 
       galleryURL: json['galleryURL'][0], 
-      paymentMethods: json['paymentMethod'].cast<String>(),
+      paymentMethods: json['paymentMethod'] == null ? [] : json['paymentMethod'].cast<String>(),
       acceptsReturns: json['returnsAccepted'] == null ? null : json['returnsAccepted'][0] == 'true', 
       sellerLocation: EbayLocation.fromJson(json), 
       shippingInfo: EbayShippingInfo.fromJson(json['shippingInfo'][0]), 
