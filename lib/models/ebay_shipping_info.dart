@@ -5,13 +5,13 @@ import 'package:ebay_search/models/price.dart';
 class EbayShippingInfo{
 
   /// If expedited shipping is available for this item
-  final bool expeditedShipping;
+  final bool? expeditedShipping;
 
   /// The number of days it takes to ship this item
-  final int handlingTime;
+  final int? handlingTime;
 
   /// Set to true if one day shipping is available
-  final bool oneDayShipping;
+  final bool? oneDayShipping;
 
   /// The list of locations this item ships to
   final List<String> shipsToLocations;
@@ -20,7 +20,7 @@ class EbayShippingInfo{
   final String shippingType;
 
   /// The shipping cost
-  final Price shippingCost;
+  final Price? shippingCost;
 
   EbayShippingInfo({
     required this.expeditedShipping, 
@@ -34,12 +34,12 @@ class EbayShippingInfo{
   factory EbayShippingInfo.fromJson(Map<String, dynamic> json){
 
     return EbayShippingInfo(
-      expeditedShipping: json['expeditedShipping'][0] == 'true', 
-      handlingTime: int.parse(json['handlingTime'][0]),
-      oneDayShipping: json['oneDayShippingAvailable'][0] == 'true', 
+      expeditedShipping: json['expeditedShipping'] == null ? null : json['expeditedShipping'][0] == 'true', 
+      handlingTime: json['handlingTime'] == null ? null : int.parse(json['handlingTime'][0]),
+      oneDayShipping: json['expeditedShipping'] == null ? null : json['oneDayShippingAvailable'][0] == 'true', 
       shipsToLocations: json['shipToLocations'].cast<String>(), 
       shippingType: json['shippingType'][0], 
-      shippingCost: Price.fromJson(json['shippingServiceCost'][0])
+      shippingCost: json['shippingServiceCost'] == null ? null : Price.fromJson(json['shippingServiceCost'][0])
     );
   }
 

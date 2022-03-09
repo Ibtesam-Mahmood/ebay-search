@@ -27,7 +27,7 @@ class EbayItem{
   final List<String> paymentMethods;
 
   ///set to true if this seller accepts returns for this item
-  final bool acceptsReturns;
+  final bool? acceptsReturns;
 
   /// The location information for this item
   final EbayLocation sellerLocation;
@@ -69,7 +69,7 @@ class EbayItem{
       primaryCategory: EbayCategory.fromJson(json['primaryCategory'][0]), 
       galleryURL: json['galleryURL'][0], 
       paymentMethods: json['paymentMethod'].cast<String>(),
-      acceptsReturns: json['returnsAccepted'][0] == 'true', 
+      acceptsReturns: json['returnsAccepted'] == null ? null : json['returnsAccepted'][0] == 'true', 
       sellerLocation: EbayLocation.fromJson(json), 
       shippingInfo: EbayShippingInfo.fromJson(json['shippingInfo'][0]), 
       saleInfo: SellingStatus.fromJson(json['sellingStatus'][0]), 
