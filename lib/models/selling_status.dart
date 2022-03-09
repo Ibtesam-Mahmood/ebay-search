@@ -1,6 +1,3 @@
-
-import 'package:ebay_search/util/global_functions.dart';
-
 import 'price.dart';
 
 /// A container for item price and selling information
