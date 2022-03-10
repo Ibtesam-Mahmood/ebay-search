@@ -105,7 +105,38 @@ class _SearchPageState extends State<SearchPage> {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 16),
-          child: child,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+
+              StoreConnector<SearchState, String>(
+                converter: (store) => store.state.recommendation,
+                builder: (context, recommendation) {
+                  return recommendation.isEmpty ? const SizedBox.shrink() : GestureDetector(
+                    onTap: (){
+                      //Updates the search term
+                      _searchTextController.text = recommendation;
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 16, left: 16),
+                      child: RichText(
+                        text: TextSpan(
+                          children: [
+                            const TextSpan(text: 'Did you mean: '),
+                            TextSpan(text: recommendation, style: const TextStyle(color: Colors.blue)),
+                            const TextSpan(text: ' instead?'),
+                          ], 
+                          style: const TextStyle(color: Colors.grey)
+                        ),
+                      ),
+                    ),
+                  );
+                }
+              ),
+              
+              child,
+            ],
+          ),
         ),
 
         // Handled keyboard dismissing
@@ -150,7 +181,7 @@ class _SearchPageState extends State<SearchPage> {
               bottom: true,
               child: Feed(
                 controller: state.state.controller,
-                loader: state.loader,
+                loader: (size, [token]) async => (await state.loader(size, token)).item1,
                 wrapper: (context, list) => _buildWrapper(context, list, focused),
                 childBuilder: (item, isLast) => _childBuilder(item as EbayItem, isLast),
               ),

@@ -17,7 +17,7 @@ SearchState _searchableFeedReducer(SearchState state, dynamic event){
     return SearchState(
       isFocused: _setFocusReducer(state, event), 
       search: _setRedexReducer(state, event), 
-      recommendation: _setKeywordRecomendationReducer(state, event), 
+      recommendation: _setKeywordRecommendationReducer(state, event), 
       loaded: _setLoadedReducer(state, event),
       controller: state.controller,
     );
@@ -43,14 +43,14 @@ String _setRedexReducer(SearchState state, _SearchEvent event){
   return state.search;
 }
 
-String _setKeywordRecomendationReducer(SearchState state, _SearchEvent event){
-  if(event is _SetKeywordRecommendation){
-    return event.recommendation;
+String _setKeywordRecommendationReducer(SearchState state, _SearchEvent event){
+  if(event is _SetKeywordRecommendation && event.recommendation != state.search){
+    return event.recommendation; //Only update the recommendation if it is not the same as the search term
   }
   else if(event is _SetLoadingEvent){
     return '';
   }
-  return state.search;
+  return state.recommendation;
 }
 
 bool _setLoadedReducer(SearchState state, _SearchEvent event){

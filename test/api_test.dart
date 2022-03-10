@@ -125,6 +125,17 @@ void main() async {
 
       expect(response, expected);
     });
+    
+    test('Test getSearchRecommendation with no recommendations', () async {
+      
+      //retrieve value
+      final List<String> response = await EbayFindingApi.getSearchRecommendation('e');
+      
+      //Construct expected
+      final List<String> expected = [];
+
+      expect(response, expected);
+    });
 
     test('Test searchItemsByKeywordsFeed', () async {
 
@@ -138,6 +149,18 @@ void main() async {
 
       expect(response.item1.length, expectedSize);
       expect(response.item2, '2');
+    });
+
+    test('Test searchItemsByKeywordsFeed with no keyword', () async {
+      
+      //retrieve value
+      final FeedResponse response = await EbayFindingApi.searchItemsByKeywordsFeed(
+        keywords: '',
+        size: 5,
+      );
+
+      expect(response.item1.length, 0);
+      expect(response.item2, null);
     });
   });
 }

@@ -6,6 +6,7 @@ import 'package:feed/feed.dart';
 import 'package:fort/fort.dart';
 import 'package:redux_epics/redux_epics.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:tuple/tuple.dart';
 
 part 'search_events.dart';
 part 'search_reducer.dart';
@@ -47,12 +48,12 @@ class SearchState extends FortState<SearchState>{
   );
 
   /// The feed loader for the search feed
-  Future<FeedResponse<EbayItem>> loader(int size, [String? token]) async {
+  Future<EbaySearchResponse> loader(int size, [String? token]) async {
     if(!searching) {
-      return const FeedResponse([], null);
+      return const EbaySearchResponse(FeedResponse([], null), []); //Return nothing
     }
 
-    final result = await EbayFindingApi.searchItemsByKeywordsFeed(
+    final result = await EbayFindingApi.ebaySearchRequest(
       keywords: search, 
       size: size, 
       pageToken: token
@@ -85,7 +86,7 @@ class SearchState extends FortState<SearchState>{
 extension SearchableFeedStateStore on Store<SearchState>{
 
   //Calls the loader and set loading to true
-  Future<FeedResponse<EbayItem>> loader(int size, [String? token]) async {
+  Future<EbaySearchResponse> loader(int size, [String? token]) async {
     dispatch(_SetLoadingEvent());
 
     final response = await state.loader(size, token);

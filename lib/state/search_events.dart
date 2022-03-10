@@ -62,9 +62,12 @@ ThunkAction<SearchState> performSearch(String search){
 }
 
 ///Sets loaded to true and updates the feed of items
-ThunkAction<SearchState> _setLoadedAction(FeedResponse<EbayItem> result){
+ThunkAction<SearchState> _setLoadedAction(EbaySearchResponse result){
   return (Store<SearchState> store) async {
 
+    final recommendations = result.item2;
+
+    store.dispatch(_SetKeywordRecommendation(recommendations.isEmpty ? '' : recommendations[0]));
     store.dispatch(_SetLoadedEvent());
   };
 }
@@ -94,9 +97,9 @@ Stream<dynamic> _searchEpic(
 
           //Update the feed
           store.state.controller.setState(InitialFeedState(
-            hasMore: result.item2 != null,
-            pageToken: result.item2,
-            items: result.item1
+            hasMore: result.item1.item2 != null,
+            pageToken: result.item1.item2,
+            items: result.item1.item1
           ));
 
           //Set loading
@@ -118,7 +121,7 @@ Stream<dynamic> _searchEpic(
  
 */
 
-Future<FeedResponse<EbayItem>> _searchHelper(SearchState state) async {
+Future<EbaySearchResponse> _searchHelper(SearchState state) async {
 
   //Clears the feed state
   state.controller.clear();

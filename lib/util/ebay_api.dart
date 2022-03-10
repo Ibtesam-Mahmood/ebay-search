@@ -1,4 +1,5 @@
 import 'package:ebay_search/util/config_reader.dart';
+import 'package:feed/feed.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -8,6 +9,7 @@ import '../models/ebay_item.dart';
 
 ///The output type for FeedRequests
 typedef FeedResponse<T> = Tuple2<List<T>, String?>;
+typedef EbaySearchResponse = Tuple2<FeedResponse<EbayItem>, List<String>>;
 
 /// Makes use of the Ebay Finding API to provide search results in a paginated HTTP request.
 /// Provides a static interface to make API requests
@@ -23,6 +25,28 @@ class EbayFindingApi {
                   |_|                        
  
 */
+
+  /// Combined API request that performs a search and a recommendation request
+  static Future<EbaySearchResponse> ebaySearchRequest({
+    int size = 10,
+    String keywords = '',
+    String? pageToken,
+  }) async {
+    
+    //Start both requests
+    final recommendationRequest = getSearchRecommendation(keywords);
+    final feedRequest = searchItemsByKeywordsFeed(
+      keywords: keywords,
+      pageToken: pageToken,
+      size: size
+    );
+
+    //Await both requests
+    final response = await Future.wait([feedRequest, recommendationRequest]);
+
+    // Assume no errors are thrown, then return
+    return EbaySearchResponse(response[0] as FeedResponse<EbayItem>, response[1] as List<String>);
+  }
 
   /// Returns a list of recommended search results relative to the inputted keyword, along with the pagination output.
   /// The pagination is controlled through the page token which is a stringified representation of the page number
@@ -91,11 +115,8 @@ class EbayFindingApi {
   /// Returns a list of recommended search results relative to the inputted keyword
   static Future<List<String>> getSearchRecommendation(String keywords) async {
 
-    //Several keywords are treated in an OR fashion
-    final keywordInput = keywords.replaceAll(' ', '+');
-
     //Create the inputs
-    final uri = getURI({'keywords': keywordInput});
+    final uri = getURI({'keywords': keywords});
     final headers = getHeaders('getSearchKeywordsRecommendation');
 
     //Send request
@@ -105,6 +126,12 @@ class EbayFindingApi {
     final List<String> recommendations = [];
     if(response.statusCode == 200){
       final responseBody = jsonDecode(response.body)['getSearchKeywordsRecommendationResponse'][0];
+
+      // If an error is thrown then there are no recommendations
+      if(responseBody['ack'][0] == 'Failure'){
+        return recommendations;
+      }
+
       recommendations.addAll(responseBody['keywords'].cast<String>());
     }
 
@@ -187,9 +214,6 @@ class EbayFindingApi {
       'X-EBAY-SOA-GLOBAL-ID': 'EBAY-ENCA',
       'X-EBAY-C-MARKETPLACE-ID': 'EBAY_CA',
       'Accept-Language': 'en-CA',
-      'Access-Control-Allow-Origin': '127.0.0.1:12345',
-      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE, HEAD',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
     };
 
     //Adds all additional headers, these headers can override the default ones
