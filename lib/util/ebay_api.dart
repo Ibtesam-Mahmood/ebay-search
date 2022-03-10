@@ -61,6 +61,10 @@ class EbayFindingApi {
 
       //Extract the list of items
       final itemCount = int.parse(searchResponse['@count']);
+      if(itemCount == 0){
+        return const FeedResponse([], null); //Return back no items
+      }
+
       final jsonItems = searchResponse['item'];
       final parsedItems = jsonItems.map<EbayItem>((json) => EbayItem.fromJson(json)).toList();
 
@@ -178,6 +182,9 @@ class EbayFindingApi {
       'X-EBAY-SOA-GLOBAL-ID': 'EBAY-ENCA',
       'X-EBAY-C-MARKETPLACE-ID': 'EBAY_CA',
       'Accept-Language': 'en-CA',
+      'Access-Control-Allow-Origin': '127.0.0.1:12345',
+      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, PUT, DELETE, HEAD',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
     };
 
     //Adds all additional headers, these headers can override the default ones

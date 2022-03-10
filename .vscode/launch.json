@@ -7,7 +7,7 @@
         {
             "name": "ebay_search",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
         },
         {
             "name": "ebay_search (profile mode)",

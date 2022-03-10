@@ -11,6 +11,8 @@ dependencies:
     sdk: flutter
   http: ^0.13.4
   tuple: ^2.0.0
+  fort: ^0.1.2
+  feed: ^0.3.31
 
 dev_dependencies:
   flutter_test:
