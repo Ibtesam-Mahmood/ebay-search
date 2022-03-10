@@ -39,7 +39,7 @@ class EbayItem{
   final SellingStatus saleInfo;
 
   /// The condition this item is in
-  final String condition;
+  final String? condition;
 
   /// Determines if this item is a top rated item
   final bool isTopRated;
@@ -73,7 +73,7 @@ class EbayItem{
       sellerLocation: EbayLocation.fromJson(json), 
       shippingInfo: EbayShippingInfo.fromJson(json['shippingInfo'][0]), 
       saleInfo: SellingStatus.fromJson(json['sellingStatus'][0]), 
-      condition: json['condition'][0]['conditionDisplayName'][0], 
+      condition: json['condition'] == null ? null : json['condition'][0]['conditionDisplayName'][0], 
       isTopRated: json['topRatedListing'][0] == 'true',
     );
   }

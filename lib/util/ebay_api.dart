@@ -55,6 +55,11 @@ class EbayFindingApi {
     if(response.statusCode == 200){
       final responseBody = jsonDecode(response.body)['findItemsByKeywordsResponse'][0];
 
+      //Check for errors and default
+      if(responseBody['ack'][0] == 'Failure'){
+        return const FeedResponse([], null); //Return back no items
+      }
+
       //Extract output items
       final searchResponse = responseBody['searchResult'][0];
       final paginationOutput = responseBody['paginationOutput'][0];

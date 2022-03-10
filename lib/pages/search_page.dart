@@ -1,9 +1,14 @@
+
+import 'dart:ui';
+
 import 'package:ebay_search/models/ebay_item.dart';
+import 'package:ebay_search/state/search_state.dart';
 import 'package:ebay_search/util/config_reader.dart';
 import 'package:ebay_search/util/ebay_api.dart';
 import 'package:ebay_search/widgets/item_list_tile.dart';
 import 'package:feed/feed.dart';
 import 'package:flutter/material.dart';
+import 'package:fort/fort.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({ Key? key }) : super(key: key);
@@ -24,8 +29,20 @@ class _SearchPageState extends State<SearchPage> {
                             
  
 */
+  /// The state controller for this page
+  late final Tower<SearchState> state = SearchState.tower;
 
-  final FeedController controller = FeedController();
+  /// The focus node for the search bar
+  late final FocusNode _searchFN = FocusNode()..addListener(() {
+    // Update the focus state
+    state.dispatch(UpdateFocusEvent(_searchFN.hasFocus));
+  });
+
+  /// The search bar text field controller
+  late final TextEditingController _searchTextController = TextEditingController()..addListener(() {
+    // Perform a search when changed
+    state.dispatch(performSearch(_searchTextController.text));
+  });
 
 /*
  
@@ -37,12 +54,6 @@ class _SearchPageState extends State<SearchPage> {
                  |_|                  
  
 */
-
-  Future<FeedResponse<EbayItem>> _feedLoader(int size, [String? token]) => EbayFindingApi.searchItemsByKeywordsFeed(
-    size: size,
-    pageToken: token,
-    keywords: 'laptop'
-  );
 
 
 /*
@@ -56,16 +67,62 @@ class _SearchPageState extends State<SearchPage> {
  
 */
 
+  AppBar _buildSearchAppBar(BuildContext context, bool focused){
+    return AppBar(
+      backgroundColor: focused ? Colors.white : Colors.orange,
+      title: TextField(
+        focusNode: _searchFN,
+        controller: _searchTextController,
+        cursorColor: Colors.blue,
+        style: TextStyle(color: focused ? Colors.orange : Colors.white, fontWeight: FontWeight.bold),
+        textInputAction: TextInputAction.search,
+        decoration: InputDecoration(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+          prefixIcon: Icon(Icons.search, color: focused ? Colors.orange : Colors.white,),
+          hintText: 'Search EBAY...',
+          hintStyle: TextStyle(color: focused ? Colors.orange : Colors.white, fontWeight: FontWeight.normal),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(32),
+            borderSide: const BorderSide(color: Colors.orange, width: 2)
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(32),
+            borderSide: const BorderSide(color: Colors.black, width: 1)
+          )
+        ),
+      ),
+    );
+  }
+
   /// Builds the individual item within the feed
   Widget _childBuilder(EbayItem item, bool isLast){
     return EbayItemListTile(item: item);
   }
 
   /// Builds the wrapping widget surrounding the feed
-  Widget _buildWrapper(BuildContext context, Widget child){
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: child,
+  Widget _buildWrapper(BuildContext context, Widget child, bool focused){
+    return Stack(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: child,
+        ),
+
+        // Handled keyboard dismissing
+        focused ? Positioned.fill(
+          child: GestureDetector(
+            child: Container(
+              color: Colors.transparent,
+            ),
+            onTap: (){
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+            onPanDown: (details){
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+          ),
+        ) : const SizedBox.shrink()
+      ],
     );
   }
 
@@ -82,17 +139,25 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        top: true,
-        bottom: true,
-        child: Feed(
-          controller: controller,
-          loader: _feedLoader,
-          wrapper: _buildWrapper,
-          childBuilder: (item, isLast) => _childBuilder(item as EbayItem, isLast),
-        ),
-      )
+    return StoreProvider(
+      store: state,
+      child: StoreConnector<SearchState, bool>(
+        converter: (store) => store.state.isFocused,
+        builder: (context, focused) {
+          return Scaffold(
+            appBar: _buildSearchAppBar(context, focused),
+            body: SafeArea(
+              bottom: true,
+              child: Feed(
+                controller: state.state.controller,
+                loader: state.loader,
+                wrapper: (context, list) => _buildWrapper(context, list, focused),
+                childBuilder: (item, isLast) => _childBuilder(item as EbayItem, isLast),
+              ),
+            )
+          );
+        }
+      ),
     );
   }
 }

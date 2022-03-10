@@ -55,7 +55,7 @@ class EbayItemListTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(16)
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
 
           // The preview image for the item
@@ -67,7 +67,8 @@ class EbayItemListTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
+                
+                // Top rated item flag
                 if(item.isTopRated)
                   Row(
                     children: [
@@ -88,6 +89,7 @@ class EbayItemListTile extends StatelessWidget {
 
                 Container(height: 8,),
 
+                // Item price 
                 RichText(
                   text: TextSpan(
                     children: [
@@ -104,6 +106,7 @@ class EbayItemListTile extends StatelessWidget {
                   ),
                 ),
                 
+
 
               ],
             ),
