@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:ebay_search/models/ebay_item.dart';
 import 'package:ebay_search/state/search_state.dart';
+import 'package:ebay_search/util/animators.dart';
 import 'package:ebay_search/util/config_reader.dart';
 import 'package:ebay_search/util/ebay_api.dart';
 import 'package:ebay_search/widgets/item_list_tile.dart';
@@ -93,6 +94,48 @@ class _SearchPageState extends State<SearchPage> {
       ),
     );
   }
+  
+  /// Builds a clickable text that shows the recommended search request
+  Widget _buildRecommendedSearch(BuildContext context){
+    return StoreConnector<SearchState, String>(
+      converter: (store) => store.state.recommendation,
+      builder: (context, recommendation) {
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          switchInCurve: Curves.easeInOutCubic,
+          switchOutCurve: Curves.easeInOutCubic,
+          transitionBuilder: (child, animation) {
+            return FadeTransition(
+              opacity: AnimationOverLast(animation, 0.8),
+              child: SizeTransition(
+                sizeFactor: AnimationOverFirst(animation, 0.4),
+                child: child
+              ),
+            );
+          },
+          child: recommendation.isEmpty ? const SizedBox.shrink() : GestureDetector(
+            onTap: (){
+              //Updates the search term
+              _searchTextController.text = recommendation;
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 16, left: 16),
+              child: RichText(
+                text: TextSpan(
+                  children: [
+                    const TextSpan(text: 'Did you mean: '),
+                    TextSpan(text: recommendation, style: const TextStyle(color: Colors.blue)),
+                    const TextSpan(text: ' instead?'),
+                  ], 
+                  style: const TextStyle(color: Colors.grey)
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+    );
+  }
 
   /// Builds the individual item within the feed
   Widget _childBuilder(EbayItem item, bool isLast){
@@ -109,30 +152,7 @@ class _SearchPageState extends State<SearchPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
-              StoreConnector<SearchState, String>(
-                converter: (store) => store.state.recommendation,
-                builder: (context, recommendation) {
-                  return recommendation.isEmpty ? const SizedBox.shrink() : GestureDetector(
-                    onTap: (){
-                      //Updates the search term
-                      _searchTextController.text = recommendation;
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 16, left: 16),
-                      child: RichText(
-                        text: TextSpan(
-                          children: [
-                            const TextSpan(text: 'Did you mean: '),
-                            TextSpan(text: recommendation, style: const TextStyle(color: Colors.blue)),
-                            const TextSpan(text: ' instead?'),
-                          ], 
-                          style: const TextStyle(color: Colors.grey)
-                        ),
-                      ),
-                    ),
-                  );
-                }
-              ),
+              _buildRecommendedSearch(context),
               
               child,
             ],
