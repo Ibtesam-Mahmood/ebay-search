@@ -1,0 +1,128 @@
+
+import 'package:ebay_search/models/ebay_item.dart';
+import 'package:flutter/material.dart';
+
+/// Uses an [EbayItem] and displays the items information within a grid tile
+class EbayItemGridTile extends StatelessWidget {
+
+  final EbayItem item;
+
+  const EbayItemGridTile({ Key? key, required this.item }) : super(key: key);
+
+  /// Returns a shipping price string
+  String get shippingPrice {
+    final shippingType = item.shippingInfo?.shippingType;
+    if(shippingType == 'Free'){
+      return 'Free Shipping';
+    }
+    else if(shippingType == 'FreePickup'){
+      return 'Pick up only';
+    }
+    else if(shippingType == 'FreightFlat' || shippingType == 'Flat' || shippingType == 'FlatDomesticCalculatedInternational'){
+      return '\$${item.shippingInfo?.shippingCost?.value} shipping';
+    }
+    else if(shippingType == 'Calculated' || shippingType == 'CalculatedDomesticFlatInternational' || shippingType == 'Freight'){
+      if(item.shippingInfo?.shippingCost?.value != null){
+        return '\$${item.shippingInfo?.shippingCost?.value} estimated shipping';
+      }
+      return '+ shipping';
+    }
+
+    return '';
+  }
+
+  Widget _buildImage(BuildContext context){
+    return Container(
+      width: double.infinity,
+      height: 150,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
+        color: Colors.grey[200],
+        image: DecorationImage(
+          image: NetworkImage(item.galleryURL ?? ''),
+          fit: BoxFit.cover
+        )
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey[300]!, width: 1),
+        borderRadius: BorderRadius.circular(16)
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+
+          // The preview image for the item
+          _buildImage(context),
+
+          // Horizontal bar
+          Container(
+            height: 0.5,
+            width: double.infinity,
+            color: Colors.grey[300],
+          ),
+
+          Container(width: 8,),
+          
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top rated item flag
+                if(item.isTopRated)
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.star,
+                        color: Colors.blue[300]!,
+                        size: 16,
+                      ),
+                      Text(' Top Rated Item', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 11, color: Colors.blue[300]!),)
+                    ],
+                  ),
+                
+                // The name of the item
+                Text(
+                  item.title,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+
+                Container(height: 2,),
+
+                // Item price 
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      const TextSpan(text: '\$ ', style: TextStyle(fontSize: 14),),
+                      TextSpan(text: '${item.saleInfo.price.value}'),
+                      TextSpan(text: ' ${item.saleInfo.price.currency} ', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),),
+                    ],
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18
+                    )
+                  ),
+                ),
+                
+                // Item shipping cost
+                Text(shippingPrice, style: const TextStyle(fontWeight: FontWeight.w300, fontSize: 14),),
+              ],
+            ),
+          )
+
+
+        ],
+      )
+    );
+  }
+}

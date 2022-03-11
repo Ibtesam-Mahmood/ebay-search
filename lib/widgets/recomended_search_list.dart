@@ -1,5 +1,6 @@
 
 import 'package:ebay_search/util/ebay_api.dart';
+import 'package:ebay_search/widgets/item_grid_tile.dart';
 import 'package:feed/feed.dart';
 import 'package:flutter/material.dart';
 
@@ -10,14 +11,20 @@ class EbayRecommendedList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: Column(
-        children: [
-          EbayRecommendedFeed(term: 'Phone',),
-          Container(height: 16,),
-          EbayRecommendedFeed(term: 'Lamp',),
-          Container(height: 16,),
-          EbayRecommendedFeed(term: 'Camera',),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Recommended Items', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),),
+            Container(height: 16,),
+            const EbayRecommendedFeed(term: 'Phone',),
+            Container(height: 16,),
+            const EbayRecommendedFeed(term: 'Lamp',),
+            Container(height: 16,),
+            const EbayRecommendedFeed(term: 'Camera',),
+          ],
+        ),
       ),
     );
   }
@@ -25,7 +32,8 @@ class EbayRecommendedList extends StatelessWidget {
 
 /// Displays an individual compact feed to be used in the recommended list
 class EbayRecommendedFeed extends StatefulWidget {
-
+  
+  /// The search term for the feed
   final String term;
 
   const EbayRecommendedFeed({ Key? key, required this.term }) : super(key: key);
@@ -42,10 +50,9 @@ class _EbayRecommendedFeedState extends State<EbayRecommendedFeed> {
     )
   );
 
+  /// Builds an item grid tile
   Widget _childBuilder(dynamic item, bool isLast){
-    return Container(
-      child: Text(item.title),
-    );
+    return EbayItemGridTile(item: item);
   }
   
   ///Builds the styling around the feed
@@ -62,7 +69,15 @@ class _EbayRecommendedFeedState extends State<EbayRecommendedFeed> {
         //Displays search term
         Padding(
           padding: const EdgeInsets.only(bottom: 10.0, left: 16),
-          child: Text(widget.term),
+          child: RichText(
+            text: TextSpan(
+              children: [
+                const TextSpan(text: 'results for: '),
+                TextSpan(text: widget.term, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black))
+              ],
+              style: const TextStyle(color: Colors.grey)
+            ),
+          ),
         ),
 
         list
@@ -73,17 +88,23 @@ class _EbayRecommendedFeedState extends State<EbayRecommendedFeed> {
 
   Widget _buildViewMoreButton(BuildContext context){
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(32),
-      onTap: (){
-        controller.loadMore();
-      },
-      child: const Padding(
-        padding: EdgeInsets.symmetric(vertical: 32),
-        child: Center(
-          child: Text(
-            'View More',
-          )
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: Colors.grey[300]!, width: 1),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(32),
+        onTap: (){
+          controller.loadMore();
+        },
+        child: const Padding(
+          padding: EdgeInsets.symmetric(vertical: 32),
+          child: Center(
+            child: Text(
+              'View More',
+            )
+          ),
         ),
       ),
     );
