@@ -6,7 +6,10 @@ import 'package:ebay_search/state/search_state.dart';
 import 'package:ebay_search/util/animators.dart';
 import 'package:ebay_search/util/config_reader.dart';
 import 'package:ebay_search/util/ebay_api.dart';
+import 'package:ebay_search/widgets/ebay_item_skeleton_list_tile.dart';
 import 'package:ebay_search/widgets/item_list_tile.dart';
+import 'package:ebay_search/widgets/loader.dart';
+import 'package:ebay_search/widgets/recomended_search_list.dart';
 import 'package:feed/feed.dart';
 import 'package:flutter/material.dart';
 import 'package:fort/fort.dart';
@@ -77,6 +80,10 @@ class _SearchPageState extends State<SearchPage> {
         cursorColor: Colors.blue,
         style: TextStyle(color: focused ? Colors.orange : Colors.white, fontWeight: FontWeight.bold),
         textInputAction: TextInputAction.search,
+        onSubmitted: (value){
+          // Perform on submission
+          state.dispatch(performSearch(value));
+        },
         decoration: InputDecoration(
           contentPadding: const EdgeInsets.symmetric(horizontal: 8),
           prefixIcon: Icon(Icons.search, color: focused ? Colors.orange : Colors.white,),
@@ -137,6 +144,87 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
+  /// Shows up within the item feed when there are no search results. 
+  /// If the state is not searching however, then this displays the [EbayRecommendedList]
+  Widget _placeHolderBuilder(BuildContext context){
+    return Center(
+      child: StoreConnector<SearchState, String>(
+        converter: (store) => store.state.search,
+        builder: (context, search) {
+
+          bool searching = search.isNotEmpty;
+
+          return !searching ? const EbayRecommendedList() : Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+
+      
+              Container(
+                height: 90,
+                width: 90,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  shape: BoxShape.circle
+                ),
+                child: const Center(
+                  child: Icon(Icons.search, color: Colors.black, size: 72,),
+                ),
+              ),
+      
+              Container(height: 16,),
+
+              //Search result text
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      const TextSpan(text: 'No Search results for '),
+                      TextSpan(text: search, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      const TextSpan(text: '. try searching something else instead?'),
+                    ],
+                    style: const TextStyle(color: Colors.grey, fontSize: 14)
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+
+              //Displays the recommendation below if there is one
+              StoreConnector<SearchState, String>(
+                converter: (store) => store.state.recommendation,
+                builder: (context, recommendation) {
+                  return recommendation.isEmpty ? const SizedBox.shrink() : Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: MaterialButton(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+                      color: Colors.orange,
+                      onPressed: (){
+                        //Updates the search term
+                        _searchTextController.text = recommendation;
+                      },
+                      child: RichText(
+                        text: TextSpan(
+                          children: [
+                            const TextSpan(text: 'Did you mean: '),
+                            TextSpan(text: recommendation, style: const TextStyle(fontWeight: FontWeight.w900)),
+                            const TextSpan(text: ' instead?'),
+                          ], 
+                          style: const TextStyle(color: Colors.white)
+                        ),
+                      ),
+                    ),
+                  );
+                }
+              ),
+
+            ],
+          );
+        }
+      ),
+    );
+  }
+
   /// Builds the individual item within the feed
   Widget _childBuilder(EbayItem item, bool isLast){
     return EbayItemListTile(item: item);
@@ -144,6 +232,12 @@ class _SearchPageState extends State<SearchPage> {
 
   /// Builds the wrapping widget surrounding the feed
   Widget _buildWrapper(BuildContext context, Widget child, bool focused){
+
+    // Determines whether to show the skeleton list of the items list
+    // Shows the skeleton list when the feed is empty
+    final list = state.state.controller.list().isEmpty ? SkeletonEbayItemListTile.skeletonBuilder(context, 10) : child;
+    final bool endList = state.state.controller.hasMore() == false;
+
     return Stack(
       children: [
         Padding(
@@ -154,7 +248,14 @@ class _SearchPageState extends State<SearchPage> {
 
               _buildRecommendedSearch(context),
               
-              child,
+              list,
+
+              Container(height: 10,),
+
+              //Display a text if no more items are available
+              Center(
+                child: endList ? const Text('End of list.', style: TextStyle(color: Colors.grey),) : const LoadingIndicator(),
+              )
             ],
           ),
         ),
@@ -204,6 +305,7 @@ class _SearchPageState extends State<SearchPage> {
                 loader: (size, [token]) async => (await state.loader(size, token)).item1,
                 wrapper: (context, list) => _buildWrapper(context, list, focused),
                 childBuilder: (item, isLast) => _childBuilder(item as EbayItem, isLast),
+                placeholder: _placeHolderBuilder(context),
               ),
             )
           );
