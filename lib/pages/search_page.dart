@@ -59,45 +59,60 @@ class _SearchPageState extends State<SearchPage> {
  
 */
 
-
-/*
- 
-     ____        _ _     _   _   _      _                     
-    | __ ) _   _(_) | __| | | | | | ___| |_ __   ___ _ __ ___ 
-    |  _ \| | | | | |/ _` | | |_| |/ _ \ | '_ \ / _ \ '__/ __|
-    | |_) | |_| | | | (_| | |  _  |  __/ | |_) |  __/ |  \__ \
-    |____/ \__,_|_|_|\__,_| |_| |_|\___|_| .__/ \___|_|  |___/
-                                         |_|                  
- 
-*/
-
   AppBar _buildSearchAppBar(BuildContext context, bool focused){
     return AppBar(
       backgroundColor: focused ? Colors.white : Colors.orange,
-      title: TextField(
-        focusNode: _searchFN,
-        controller: _searchTextController,
-        cursorColor: Colors.blue,
-        style: TextStyle(color: focused ? Colors.orange : Colors.white, fontWeight: FontWeight.bold),
-        textInputAction: TextInputAction.search,
-        onSubmitted: (value){
-          // Perform on submission
-          state.dispatch(performSearch(value));
-        },
-        decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-          prefixIcon: Icon(Icons.search, color: focused ? Colors.orange : Colors.white,),
-          hintText: 'Search EBAY...',
-          hintStyle: TextStyle(color: focused ? Colors.orange : Colors.white, fontWeight: FontWeight.normal),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(32),
-            borderSide: const BorderSide(color: Colors.orange, width: 2)
+      title: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              focusNode: _searchFN,
+              controller: _searchTextController,
+              cursorColor: Colors.blue,
+              style: TextStyle(color: focused ? Colors.orange : Colors.white, fontWeight: FontWeight.bold),
+              textInputAction: TextInputAction.search,
+              onSubmitted: (value){
+                // Perform on submission
+                state.dispatch(performSearch(value));
+              },
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                prefixIcon: Icon(Icons.search, color: focused ? Colors.orange : Colors.white,),
+                hintText: 'Search EBAY...',
+                hintStyle: TextStyle(color: focused ? Colors.orange : Colors.white, fontWeight: FontWeight.normal),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(32),
+                  borderSide: const BorderSide(color: Colors.orange, width: 2)
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(32),
+                  borderSide: const BorderSide(color: Colors.black, width: 1)
+                )
+              ),
+            ),
           ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(32),
-            borderSide: const BorderSide(color: Colors.black, width: 1)
+
+          StoreConnector<SearchState, String>(
+            converter: (store) => store.state.search,
+            builder: (context, search) {
+              return search.isEmpty ? const SizedBox.shrink() : Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: MaterialButton(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+                  color: focused ? Colors.orange : Colors.white,
+                  onPressed: () {
+                    //Clear the search
+                    _searchTextController.clear();
+                  },
+                  child: Text(
+                    'Clear',
+                    style: TextStyle(color: focused ? Colors.white : Colors.orange),
+                  ),
+                ),
+              );
+            }
           )
-        ),
+        ],
       ),
     );
   }
